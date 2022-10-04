@@ -1,41 +1,43 @@
 from typing import List
+from collections import Counter, OrderedDict
 
 
 class CountVectorizer:
-    """Создание терм-документной матрицы по набору текстов."""
+    """
+    Класс для создания терм-документной матрицы по набору текстов.
+    """
 
-    def __init__(self, texts: List[str] = None, features: List[str] = None):
-        self.texts = texts
-        self._features = features
+    def __init__(self):
+        self.features = []
 
-    def fit_transform(self, texts: List[str]) -> List[List[int]]:
+    def fit_transform(self, texts: List[str] = ['']) -> List[List[int]]:
         """
-        Принимает текстовый корпус.
+        Принимает текстовый корпус и создаёт по нему
+        терм-документную матрицу вместе со словарем
+        уникальных терминов.
 
-        :return: Возвращает терм-документную матрицу.
+        Возвращает терм-документную матрицу.
         """
-
-        self._features = []
-        for word in ' '.join(texts).split():
-            if word.lower() not in self._features:
-                self._features.append(word.lower())
-
         texts_transformed = []
+        words_dict = OrderedDict()
         for text in texts:
-            text_transformed = []
-            for word in self._features:
-                text_transformed.append(text.lower().count(word))
-            texts_transformed.append(text_transformed)
-        return texts_transformed
+            text = text.lower().split()
+            words_dict.update(zip(text, [0] * len(text)))
+            texts_transformed.append(Counter(text))
+        self.features = list(words_dict.keys())
+        fit_transformed = [
+            [
+                text[word] for word in self.features
+            ] for text in texts_transformed
+        ]
+        return fit_transformed
 
     def get_feature_names(self) -> List[str]:
         """
-        Ничего не принимает.
-
-        :return: Возвращает список фичей (уникальных слов из корпуса).
+        Ничего не принимает, при вызове
+        возвращает список фичей (уникальных слов из корпуса).
         """
-
-        return self._features
+        return self.features
 
 
 if __name__ == '__main__':
@@ -48,3 +50,6 @@ if __name__ == '__main__':
 
     print(vectorizer.get_feature_names())
     print(count_matrix)
+
+    vectorizer_2 = CountVectorizer()
+    print(vectorizer_2.fit_transform())
